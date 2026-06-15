@@ -6,7 +6,7 @@ public class LHM{
         h.put("even", 2);
         h.put("even", 3);
         h.put("even", 4);
-        h.put("even", 5);
+        h.put("even", 5); 
         System.out.println(h);
         LinkedHashMap<String,Integer>lh=new LinkedHashMap<>(h);
         lh.put("odd", 1);
