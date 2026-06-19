@@ -1,0 +1,147 @@
+Enter password: ************
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 35
+Server version: 8.0.46 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2026, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database bank;
+Query OK, 1 row affected (0.04 sec)
+
+mysql> use bank;
+Database changed
+mysql> create table customer (
+    ->     customer_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     customer_name VARCHAR(50),
+    ->     account_no VARCHAR(20) UNIQUE);
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> INSERT INTO customer(customer_name,account_no) VALUES('Yash','ACC101'),('vara','ACC102'),('sandy','ACC103'),('venky','ACC104');
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> create table  transactions (
+    ->     trans_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     customer_id INT,amount DECIMAL(10,2),trans_date DATE,
+    ->     FOREIGN KEY (customer_id) REFERENCES customer(customer_id));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> insert into transactions(customer_id,amount,trans_date) VALUES(1,5000,'2026-06-01'),(1,2000,'2026-06-01'),(2,3500,'2026-06-02'),(2,3500,'2026-06-02'),(3,1000,'2026-06-03');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select *from transactions where amount > 3000;
++----------+-------------+---------+------------+
+| trans_id | customer_id | amount  | trans_date |
++----------+-------------+---------+------------+
+|        1 |           1 | 5000.00 | 2026-06-01 |
+|        3 |           2 | 3500.00 | 2026-06-02 |
+|        4 |           2 | 3500.00 | 2026-06-02 |
++----------+-------------+---------+------------+
+3 rows in set (0.01 sec)
+
+mysql> select customer_id,trans_date,avg(amount) AS avg_amount
+    -> from transactions group by customer_id, trans_date;
++-------------+------------+-------------+
+| customer_id | trans_date | avg_amount  |
++-------------+------------+-------------+
+|           1 | 2026-06-01 | 3500.000000 |
+|           2 | 2026-06-02 | 3500.000000 |
+|           3 | 2026-06-03 | 1000.000000 |
++-------------+------------+-------------+
+3 rows in set (0.01 sec)
+
+mysql> select customer_id,SUM(amount) AS total_amount
+    -> from transactions group by customer_id;
++-------------+--------------+
+| customer_id | total_amount |
++-------------+--------------+
+|           1 |      7000.00 |
+|           2 |      7000.00 |
+|           3 |      1000.00 |
++-------------+--------------+
+3 rows in set (0.01 sec)
+
+mysql>
+mysql> select customer_id,amount,COUNT(*) AS count from transactions
+    -> group by customer_id, amount having COUNT(*) > 1;
++-------------+---------+-------+
+| customer_id | amount  | count |
++-------------+---------+-------+
+|           2 | 3500.00 |     2 |
++-------------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> select c.customer_id,c.customer_name from customer c
+    -> LEFT JOIN transactions t ON c.customer_id = t.customer_id
+    -> where t.trans_id IS NULL;
++-------------+---------------+
+| customer_id | customer_name |
++-------------+---------------+
+|           4 | venky         |
++-------------+---------------+
+1 row in set (0.01 sec)
+
+mysql> commit;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> insert into transactions(customer_id,amount,trans_date) VALUES(8,50000,'2026-06-01');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`bank`.`transactions`, CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`))
+mysql> INSERT INTO customer(customer_name,account_no) VALUES('sushu','ACC105');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from customer;
++-------------+---------------+------------+
+| customer_id | customer_name | account_no |
++-------------+---------------+------------+
+|           1 | Yash          | ACC101     |
+|           2 | vara          | ACC102     |
+|           3 | sandy         | ACC103     |
+|           4 | venky         | ACC104     |
+|           5 | sushu         | ACC105     |
++-------------+---------------+------------+
+5 rows in set (0.00 sec)
+
+mysql> rollback;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from customer;
++-------------+---------------+------------+
+| customer_id | customer_name | account_no |
++-------------+---------------+------------+
+|           1 | Yash          | ACC101     |
+|           2 | vara          | ACC102     |
+|           3 | sandy         | ACC103     |
+|           4 | venky         | ACC104     |
+|           5 | sushu         | ACC105     |
++-------------+---------------+------------+
+5 rows in set (0.00 sec)
+
+mysql> INSERT INTO customer(customer_name,account_no) VALUES('jashu','ACC106')
+    -> rollback;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rollback' at line 2
+mysql> INSERT INTO customer(customer_name,account_no) VALUES('jashu','ACC106');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> rollback;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from customer;
++-------------+---------------+------------+
+| customer_id | customer_name | account_no |
++-------------+---------------+------------+
+|           1 | Yash          | ACC101     |
+|           2 | vara          | ACC102     |
+|           3 | sandy         | ACC103     |
+|           4 | venky         | ACC104     |
+|           5 | sushu         | ACC105     |
+|           6 | jashu         | ACC106     |
++-------------+---------------+------------+
+6 rows in set (0.00 sec)
